@@ -59,7 +59,7 @@ async def buy(trade_id: int, your_wallet_id: int, coin_id: int, db: AsyncSession
     return await TradeServices.buy(trade_id=trade_id, your_wallet_id=your_wallet_id, coin_id=coin_id, db=db)
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(get_db)):
     await websocket.accept()
     try:
         data = await websocket.receive_text()
@@ -69,10 +69,8 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text("Invalid coin ID")
             return
         while True:
-            db: AsyncSession = await get_db().__anext__()
             price = await WebsocketServices.get_price(coin_id=coin_id, db=db)
             await websocket.send_text(f"{price}")
             await asyncio.sleep(1)
-            db.close()
     except WebSocketDisconnect:
         print("WebSocket disconnected")
