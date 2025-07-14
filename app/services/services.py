@@ -9,6 +9,9 @@ from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 
+import redis
+import json
+
 class UserServices:
 
     @staticmethod
@@ -449,10 +452,12 @@ class TradeServices:
         await db.commit()
 
         # Setting New Price For Coin
-        coin = await db.exec(select(Coin).where(Coin.id==coin_id))
+        coin = await db.exec(select(Coin).where(Coin.id==trade.coin_id))
         coin: Coin = coin.first()
         coin.price_per_unit = trade.price
-        await db.add(coin)
+        db.add(coin)
+
+        await db.commit()
         
         # Refresh objects
         await db.refresh(buy_trade)
@@ -463,3 +468,25 @@ class TradeServices:
 
         return buy_trade
     
+
+class WebsocketServices:
+
+    @staticmethod
+    async def get_price(coin_id: int, db: AsyncSession) -> Optional[float]:
+        r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        cached = r.get('coins')
+        if not cached:
+            result = await db.exec(select(Coin))
+            coins: List[Coin] = result.all()
+            coins_json = [coin.model_dump() for coin in coins]
+            r.set('coins', json.dumps(coins_json))
+            r.expire('coins', 1)
+            for coin in coins:
+                if coin.id == coin_id:
+                    return coin
+        else:
+            coins = json.loads(cached)
+            for coin in coins:
+                if coin["id"] == coin_id:
+                    return coin
+        return None 

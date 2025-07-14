@@ -1,9 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.database import get_db
 from fastapi import Depends
 from typing import List
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.services import UserServices, CoinServices, WalletServices, TradeServices
+from app.services import UserServices, CoinServices, WalletServices, TradeServices, WebsocketServices
+import asyncio
 
 from app.models import *
 
@@ -56,3 +57,22 @@ async def purchase_options(coin_id: int, db: AsyncSession = Depends(get_db)):
 @router.post("/buy/")
 async def buy(trade_id: int, your_wallet_id: int, coin_id: int, db: AsyncSession = Depends(get_db)):
     return await TradeServices.buy(trade_id=trade_id, your_wallet_id=your_wallet_id, coin_id=coin_id, db=db)
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        data = await websocket.receive_text()
+        try:
+            coin_id = int(data)
+        except ValueError:
+            await websocket.send_text("Invalid coin ID")
+            return
+        while True:
+            db: AsyncSession = await get_db().__anext__()
+            price = await WebsocketServices.get_price(coin_id=coin_id, db=db)
+            await websocket.send_text(f"{price}")
+            await asyncio.sleep(1)
+            db.close()
+    except WebSocketDisconnect:
+        print("WebSocket disconnected")
