@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from sqlmodel import Field, SQLModel, Relationship, Column, String, DateTime
 from sqlalchemy import UniqueConstraint
-from pydantic import condecimal, constr
+
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
 
@@ -56,7 +57,7 @@ class Trade(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, index=True)
     user_id: int = Field(foreign_key="users.id")
     coin_id: int = Field(foreign_key="coin_types.id")
-    trade_type: str = Field(sa_column=Column(String(10)))
+    trade_type: str = Field(sa_column=Column(String(20)))
     price: float
     quantity: float
     timestamp: datetime = Field(default_factory=datetime.utcnow)
@@ -69,7 +70,7 @@ class Transaction(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id")
-    type: str = Field(sa_column=Column(String(10)))
+    type: str = Field(sa_column=Column(String(20)))
     amount: float
     coin_id: int = Field(foreign_key="coin_types.id")
     timestamp: datetime | None = Field(default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True)))

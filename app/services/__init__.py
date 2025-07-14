@@ -1,1 +1,1 @@
-from .services import UserServices, CoinServices, WalletServices
+from .services import UserServices, CoinServices, WalletServices, TradeServices
