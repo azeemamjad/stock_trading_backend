@@ -16,67 +16,6 @@ import jwt
 from datetime import timedelta, timezone, datetime
 from functools import wraps
 
-jwt_config = {}
-jwt_config['secret_key'] = "11223344"
-
-class JWT_Services():
-    
-    @staticmethod  # Added missing @staticmethod decorator
-    def create_token(user_id):
-        payload = {
-            "user_id": user_id,
-            "exp": datetime.now(timezone.utc) + timedelta(hours=1),
-            "iat": datetime.now(timezone.utc),
-        }
-
-        token = jwt.encode(payload, jwt_config['secret_key'], algorithm="HS256")
-        return token
-
-    @staticmethod
-    def decode_token(token):
-        try:
-            decoded_token = jwt.decode(token, jwt_config['secret_key'], algorithms=["HS256"])
-            return decoded_token.get("user_id")
-        except jwt.ExpiredSignatureError:
-            print("Token expired!")
-            return None
-        except jwt.InvalidTokenError:
-            print("Invalid token!")
-            return None
-    
-    @staticmethod
-    def jwt_required(func):
-        @wraps(func)
-        async def wrapper(request: Request, *args, **kwargs):  # Added async
-            access_token = request.headers.get("access_token", "")
-            if access_token:
-                user_id = JWT_Services.decode_token(access_token)
-                if user_id:
-                    request.user_id = user_id
-                    return await func(request, *args, **kwargs)  # Added await
-                else:
-                    raise HTTPException(status_code=403, detail="Token Is Not Valid! Please Login Again")
-            else:
-                raise HTTPException(status_code=403, detail="Token Not Found Please Login!")
-        return wrapper
-    
-    @staticmethod
-    async def login_user(email, password, request: Request, db: AsyncSession):
-        # Fixed the query execution
-        result = await db.exec(select(User).where(User.email == email, User.password == password))
-        user: User = result.first()
-        
-        if user:
-            token = JWT_Services.create_token(user.id)
-            return JSONResponse(
-                status_code=200, 
-                content={
-                    "message": "User Logged In Successfully!", 
-                    "access_token": token
-                }
-            )
-        else:
-            raise HTTPException(status_code=404, detail="User Not Found!")
         
 class UserServices:
 
