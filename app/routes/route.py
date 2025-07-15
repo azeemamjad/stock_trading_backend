@@ -47,10 +47,8 @@ class JWT_Management:
             decoded_token = jwt.decode(token, "1122", algorithms=["HS256"])
             return decoded_token.get("id")
         except jwt.ExpiredSignatureError:
-            print("Token expired!")
             return None
         except jwt.InvalidTokenError:
-            print("Invalid token!")
             return None
     
     @staticmethod
@@ -93,14 +91,17 @@ async def create_user(user: User, db: AsyncSession = Depends(get_db)):
     return await UserServices.create_user(user=user, db=db)
 
 @router.get("/wallet/")
+@JWT_Management.require_jwt
 async def get_wallet(user_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     return await WalletServices.get_wallet(user_id=user_id, db=db)
 
 @router.post("/deposit/", response_model=Transaction)
+@JWT_Management.require_jwt
 async def deposit(user_id: int, coin_id: int, amount: float, request: Request, db: AsyncSession = Depends(get_db)):
     return await WalletServices.deposit(user_id=user_id, coin_id=coin_id, amount=amount, db=db)
 
 @router.post("/withdraw/", response_model=Transaction)
+@JWT_Management.require_jwt
 async def withdraw(user_id: int, coin_id: int, amount: float, request: Request, db: AsyncSession = Depends(get_db)):
     return await WalletServices.withdraw(user_id=user_id, coin_id=coin_id, amount=amount, db=db)
 
@@ -109,6 +110,7 @@ async def list_coins(db: AsyncSession = Depends(get_db)):
     return await CoinServices.get_coins(db=db)
 
 @router.post("/coins/")
+@JWT_Management.require_jwt
 async def add_coin(coin: Coin, request: Request, db: AsyncSession = Depends(get_db)):
     return await CoinServices.add_coin(coin=coin, db=db)
 
@@ -117,6 +119,7 @@ async def get_coin(coin_id: int, db: AsyncSession = Depends(get_db)):
     return await CoinServices.get_coin(coin_id, db)
 
 @router.post("/sell/", response_model=TradeOut)
+@JWT_Management.require_jwt
 async def deposit(user_id: int, coin_id: int, amount: float, price_per_unit: float, request: Request, db: AsyncSession = Depends(get_db)):
     return await TradeServices.sell(user_id=user_id, coin_id=coin_id, amount=amount, price_per_unit=price_per_unit, db=db)
 
@@ -125,6 +128,7 @@ async def purchase_options(coin_id: int, db: AsyncSession = Depends(get_db)):
     return await TradeServices.get_options(coin_id, db=db)
 
 @router.post("/buy/")
+@JWT_Management.require_jwt
 async def buy(trade_id: int, your_wallet_id: int, coin_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     return await TradeServices.buy(trade_id=trade_id, your_wallet_id=your_wallet_id, coin_id=coin_id, db=db)
 

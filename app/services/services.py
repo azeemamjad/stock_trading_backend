@@ -153,6 +153,9 @@ class WalletServices:
         wallet: Wallet = wallet_result.first()
         if not wallet:
             raise HTTPException(status_code=404, detail="Wallet not found for user.")
+
+        if amount <= 0:
+            raise HTTPException(status_code=404, detail="Price Should be greate than 0.")
         
         coins_in_wallet = await db.exec(select(CoinsWallet).where(CoinsWallet.wallet_id==wallet.id))
         coins_in_wallet: List[CoinsWallet] = coins_in_wallet.all()
@@ -195,6 +198,9 @@ class WalletServices:
         wallet: Wallet = wallet_result.first()
         if not wallet:
             raise HTTPException(status_code=404, detail="Wallet not found for user.")
+        
+        if amount <= 0:
+            raise HTTPException(status_code=404, detail="Price Should be greate than 0.")
         
         coins_in_wallet = await db.exec(select(CoinsWallet).where(CoinsWallet.wallet_id==wallet.id))
         coins_in_wallet: List[CoinsWallet] = coins_in_wallet.all()
@@ -253,8 +259,8 @@ class CoinServices:
             return coin
         except IntegrityError as e:
             db.rollback()
-            s = str(e.orig).split("DETAIL:")[1].strip()
-            raise HTTPException(status_code=400, detail=f"{s}")
+            s = str(e.orig)
+            raise HTTPException(status_code=400, detail=f"Duplicate: {s}")
 
 
 class TradeServices:
@@ -276,6 +282,8 @@ class TradeServices:
         if not wallet:
             raise HTTPException(status_code=404, detail="Wallet not found for user.")
         
+        if amount <= 0 or price_per_unit <= 0:
+            raise HTTPException(status_code=404, detail="Amount and Price Per Unit Should be greater than 0.")
         # Check if user has the coin in their wallet
         coin_in_wallet_result = await db.exec(
             select(CoinsWallet).where(

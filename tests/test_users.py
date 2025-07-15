@@ -18,6 +18,7 @@ async def test_get_token(client):
 @pytest.mark.anyio
 async def test_get_users_empty_without_token(client):
     r = await client.get("/users", headers={"access_token": ""})
+    assert r.json()['message'] == 'You are not authenticated to use this route...'
     assert r.status_code == 403
 
 @pytest.mark.anyio
@@ -43,6 +44,7 @@ async def test_create_and_get_user_without_token(client):
     user_id = data["user"]["id"]
     r2 = await client.get(f"/user-details?user_id={user_id}", headers={"access_token": ""})
     # breakpoint()
+    assert r2.json()['message'] == 'You are not authenticated to use this route...'
     assert r2.status_code == 403
 
 
