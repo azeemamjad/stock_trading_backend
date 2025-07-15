@@ -115,8 +115,8 @@ class UserServices:
             return JSONResponse(status_code=201, content={"user": user.model_dump(), "wallet": wallet.model_dump()})
         except IntegrityError as e:
             db.rollback()
-            s = str(e.orig).split("DETAIL:")[1].strip()
-            raise HTTPException(status_code=404, detail=f"{s}")
+            s = e.orig
+            raise HTTPException(status_code=404, detail=f"Illigle Credentials, {s}")
 
 
 class WalletServices:
