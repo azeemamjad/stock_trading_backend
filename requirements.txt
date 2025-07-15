@@ -3,3 +3,6 @@ asyncpg==0.30.0
 sqlmodel==0.0.24
 sqlalchemy==2.0.41
 redis[hiredis]
+pytest
+pytest-asyncio
+aiosqlite
