@@ -1,13 +1,12 @@
-version: '3.9'
-
 services:
   web:
     build: .
     container_name: fastapi_app
     ports:
-      - "8000:8000"
+      - "8005:8005"
     depends_on:
       - db
+    command: ["./wait-for-it.sh", "db:5432", "--", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8005", "--reload"]
     environment:
       DATABASE_URL: postgresql+asyncpg://azeem:azeem123@db:5432/TradingApp
     volumes:
@@ -22,7 +21,7 @@ services:
       POSTGRES_PASSWORD: azeem123
       POSTGRES_DB: TradingApp
     ports:
-      - "5432:5432"
+      - "6543:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
