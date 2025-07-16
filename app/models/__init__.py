@@ -1,1 +1,15 @@
-from .models import *
+from .models import (
+    Coin as Coin,
+    Wallet as Wallet,
+    Trade as Trade,
+    Transaction as Transaction,
+    User as User,
+    CoinsWallet as CoinsWallet,
+    CoinOut as CoinOut,
+    TradeOut as TradeOut,
+    WalletOut as WalletOut,
+    TransactionOut as TransactionOut,
+    CoinsWalletOut as CoinsWalletOut,
+    UserOut as UserOut,
+    UserDetailedOut as UserDetailedOut,
+)

@@ -6,3 +6,4 @@ redis[hiredis]
 pytest
 pytest-asyncio
 aiosqlite
+ruff

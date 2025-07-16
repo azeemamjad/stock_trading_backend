@@ -17,6 +17,7 @@ class User(SQLModel, table=True):
     trades: List["Trade"] = Relationship(back_populates="user")
     transactions: List["Transaction"] = Relationship(back_populates="user")
 
+
 class Wallet(SQLModel, table=True):
     __tablename__ = "wallets"
 
@@ -25,7 +26,11 @@ class Wallet(SQLModel, table=True):
     name: str
 
     user: Optional[User] = Relationship(back_populates="wallet")
-    coins_wallet: List["CoinsWallet"] = Relationship(back_populates="wallet", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    coins_wallet: List["CoinsWallet"] = Relationship(
+        back_populates="wallet",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
 
 class Coin(SQLModel, table=True):
     __tablename__ = "coin_types"
@@ -41,7 +46,9 @@ class Coin(SQLModel, table=True):
 
 class CoinsWallet(SQLModel, table=True):
     __tablename__ = "coins_wallet"
-    __table_args__ = (UniqueConstraint("wallet_id", "coin_type_id", name="uix_wallet_coin_type"),)
+    __table_args__ = (
+        UniqueConstraint("wallet_id", "coin_type_id", name="uix_wallet_coin_type"),
+    )
 
     id: Optional[int] = Field(default=None, primary_key=True)
     wallet_id: int = Field(foreign_key="wallets.id")
@@ -50,6 +57,7 @@ class CoinsWallet(SQLModel, table=True):
 
     wallet: Wallet = Relationship(back_populates="coins_wallet")
     coin_type: Coin = Relationship(back_populates="wallets")
+
 
 class Trade(SQLModel, table=True):
     __tablename__ = "trades"
@@ -65,6 +73,7 @@ class Trade(SQLModel, table=True):
     user: User = Relationship(back_populates="trades")
     cointype: Coin = Relationship(back_populates="trades")
 
+
 class Transaction(SQLModel, table=True):
     __tablename__ = "transactions"
 
@@ -73,12 +82,16 @@ class Transaction(SQLModel, table=True):
     type: str = Field(sa_column=Column(String(20)))
     amount: float
     coin_id: int = Field(foreign_key="coin_types.id")
-    timestamp: datetime | None = Field(default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True)))
+    timestamp: datetime | None = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True)),
+    )
 
     user: User = Relationship(back_populates="transactions")
 
 
 # output schemas
+
 
 class CoinOut(SQLModel):
     id: int
@@ -89,6 +102,7 @@ class CoinOut(SQLModel):
     class Config:
         from_attributes = True
 
+
 class CoinsWalletOut(SQLModel):
     id: int
     coin_type: CoinOut
@@ -97,6 +111,7 @@ class CoinsWalletOut(SQLModel):
     class Config:
         from_attributes = True
 
+
 class WalletOut(SQLModel):
     id: int
     name: str
@@ -104,6 +119,7 @@ class WalletOut(SQLModel):
 
     class Config:
         from_attributes = True
+
 
 class TransactionOut(SQLModel):
     id: int
@@ -114,6 +130,7 @@ class TransactionOut(SQLModel):
 
     class Config:
         from_attributes = True
+
 
 class TradeOut(SQLModel):
     id: int
@@ -126,6 +143,7 @@ class TradeOut(SQLModel):
     class Config:
         from_attributes = True
 
+
 class UserDetailedOut(SQLModel):
     id: int
     first_name: str
@@ -137,6 +155,7 @@ class UserDetailedOut(SQLModel):
 
     class Config:
         from_attributes = True
+
 
 class UserOut(SQLModel):
     id: int
